@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fitness Journey Dashboard</title>
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<div class="shell">
+<aside>
+  <div class="brand"><b>FJ</b><div><h1 id="title">Fitness Journey</h1><small>2026–2027</small></div></div>
+  <nav>
+    <button class="active" data-tab="overview">Overview</button>
+    <button data-tab="workout">Workout</button>
+    <button data-tab="cardio">Cardio</button>
+    <button data-tab="nutrition">Nutrition</button>
+    <button data-tab="recovery">Recovery</button>
+  </nav>
+</aside>
+
+<main>
+<header><div><p>PERSONAL ANALYTICS</p><h2>Body Transformation Dashboard</h2></div><span id="status">Loading Excel…</span></header>
+
+<section id="overview" class="tab active">
+<div class="cards">
+  <div class="card c1"><label>Current Weight</label><strong id="currentWeight">—</strong><em>lb</em></div>
+  <div class="card c2"><label>Target Weight</label><strong id="targetWeight">—</strong><em>lb</em></div>
+  <div class="card c3"><label>Total Lost</label><strong id="totalLost">—</strong><em>lb</em></div>
+  <div class="card c4"><label>Workout Days</label><strong id="workoutDays">—</strong><em>days</em></div>
+  <div class="card c5"><label>Cardio Sessions</label><strong id="cardioSessions">—</strong><em>sessions</em></div>
+</div>
+<div class="grid">
+  <article><h3>Weight Trend</h3><canvas id="weightChart"></canvas></article>
+  <article><h3>Goal Progress</h3><div class="ring" id="ring"><span id="progressPct">0%</span></div></article>
+</div>
+</section>
+
+<section id="workout" class="tab">
+<div class="sectionhead">
+  <div><p class="eyebrow">STRENGTH & MOVEMENT</p><h2>Workout</h2></div>
+  <select id="muscleFilter">
+    <option>Chest</option><option>Back</option><option>Triceps</option><option>Shoulders</option>
+    <option>Abs/Core</option><option>Biceps</option><option>Calisthenics</option><option>Legs</option>
+  </select>
+</div>
+<div class="grid">
+  <article><h3 id="strengthTitle">Load Trend</h3><canvas id="strengthChart"></canvas></article>
+  <article><h3 id="volumeTitle">Training Volume</h3><canvas id="volumeChart"></canvas></article>
+</div>
+<article class="raw"><h3 id="workoutRawTitle">Raw Workout Data</h3><div class="tablewrap"><table id="workoutTable"></table></div></article>
+</section>
+
+<section id="cardio" class="tab">
+<h2>Cardio</h2>
+<div class="cards three">
+  <div class="card c1"><label>Total Sessions</label><strong id="cardioTotal">—</strong></div>
+  <div class="card c3"><label>Total Minutes</label><strong id="cardioMinutes">—</strong></div>
+  <div class="card c4"><label>Tracked Calories</label><strong id="cardioCalories">—</strong></div>
+</div>
+<div class="grid">
+  <article><h3>Cardio Mix</h3><canvas id="cardioMixChart"></canvas></article>
+  <article><h3>Duration Trend</h3><canvas id="cardioDurationChart"></canvas></article>
+</div>
+<article class="raw"><h3>Raw Cardio Data</h3><div class="tablewrap"><table id="cardioTable"></table></div></article>
+</section>
+
+<section id="nutrition" class="tab">
+<h2>Nutrition</h2>
+<div class="cards three">
+  <div class="card c4"><label>Avg Calories</label><strong id="avgCalories">—</strong></div>
+  <div class="card c2"><label>Avg Protein</label><strong id="avgProtein">—</strong><em>g</em></div>
+  <div class="card c3"><label>Protein Target</label><strong id="proteinTarget">—</strong><em>g</em></div>
+</div>
+<div class="grid">
+  <article><h3>Calories</h3><canvas id="calorieChart"></canvas></article>
+  <article><h3>Protein</h3><canvas id="proteinChart"></canvas></article>
+</div>
+<article class="raw"><h3>Raw Nutrition Data</h3><div class="tablewrap"><table id="nutritionTable"></table></div></article>
+</section>
+
+<section id="recovery" class="tab">
+<h2>Recovery</h2>
+<div class="cards two">
+  <div class="card c3"><label>Rest Days</label><strong id="restDays">—</strong></div>
+  <div class="card c2"><label>Avg Energy</label><strong id="avgEnergy">—</strong><em>/10</em></div>
+</div>
+<article class="raw"><h3>Raw Recovery Data</h3><div class="tablewrap"><table id="recoveryTable"></table></div></article>
+</section>
+</main>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
