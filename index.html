@@ -14,10 +14,12 @@
   <div class="brand"><b>FJ</b><div><h1 id="title">Fitness Journey</h1><small>2026–2027</small></div></div>
   <nav>
     <button class="active" data-tab="overview">Overview</button>
+    <button data-tab="dailyView">Daily View</button>
     <button data-tab="workout">Workout</button>
     <button data-tab="cardio">Cardio</button>
     <button data-tab="nutrition">Nutrition</button>
     <button data-tab="recovery">Recovery</button>
+    <button data-tab="rawData">Daily Raw Data</button>
   </nav>
 </aside>
 
@@ -38,13 +40,56 @@
 </div>
 </section>
 
+<section id="dailyView" class="tab">
+<div class="sectionhead">
+  <div><p class="eyebrow">DAY-BY-DAY HISTORY</p><h2>Daily View</h2></div>
+  <label class="filterlabel">Select Day
+    <select id="dayFilter"></select>
+  </label>
+</div>
+
+<div class="cards daily-cards">
+  <div class="card c1"><label>Date</label><strong class="smallvalue" id="dayDate">—</strong></div>
+  <div class="card c2"><label>Week</label><strong id="dayWeek">—</strong></div>
+  <div class="card c4"><label>Calories</label><strong id="dayCalories">—</strong></div>
+  <div class="card c3"><label>Protein</label><strong id="dayProtein">—</strong><em>g</em></div>
+  <div class="card c5"><label>Body Weight</label><strong id="dayWeight">—</strong><em>lb</em></div>
+</div>
+
+<article class="summary-panel">
+  <p class="eyebrow">WORKOUT SUMMARY</p>
+  <h3 id="dayWorkoutSummary">—</h3>
+</article>
+
+<article class="raw">
+  <div class="panelhead"><h3>Exercises Performed</h3><span id="dayExerciseCount"></span></div>
+  <div class="tablewrap"><table id="dailyWorkoutTable"></table></div>
+</article>
+
+<article class="raw">
+  <div class="panelhead"><h3>Cardio / Activity</h3><span id="dayCardioCount"></span></div>
+  <div class="tablewrap"><table id="dailyCardioTable"></table></div>
+</article>
+
+<article class="summary-panel">
+  <p class="eyebrow">DAY NOTES</p>
+  <div class="day-meta">
+    <div><span>Rest Day</span><strong id="dayRest">—</strong></div>
+    <div><span>Energy</span><strong id="dayEnergy">—</strong></div>
+    <div class="wide-meta"><span>Notes</span><strong id="dayNotes">—</strong></div>
+  </div>
+</article>
+</section>
+
 <section id="workout" class="tab">
 <div class="sectionhead">
   <div><p class="eyebrow">STRENGTH & MOVEMENT</p><h2>Workout</h2></div>
-  <select id="muscleFilter">
-    <option>Chest</option><option>Back</option><option>Triceps</option><option>Shoulders</option>
-    <option>Abs/Core</option><option>Biceps</option><option>Calisthenics</option><option>Legs</option>
-  </select>
+  <label class="filterlabel">Muscle Group
+    <select id="muscleFilter">
+      <option>Chest</option><option>Back</option><option>Triceps</option><option>Shoulders</option>
+      <option>Abs/Core</option><option>Biceps</option><option>Calisthenics</option><option>Legs</option>
+    </select>
+  </label>
 </div>
 <div class="grid">
   <article><h3 id="strengthTitle">Load Trend</h3><canvas id="strengthChart"></canvas></article>
@@ -89,6 +134,17 @@
 </div>
 <article class="raw"><h3>Raw Recovery Data</h3><div class="tablewrap"><table id="recoveryTable"></table></div></article>
 </section>
+
+<section id="rawData" class="tab">
+<div class="sectionhead">
+  <div><p class="eyebrow">SOURCE DATA</p><h2>Daily Raw Data</h2></div>
+  <span class="rawcount" id="dailyRawCount"></span>
+</div>
+<article class="raw raw-full">
+  <div class="tablewrap tall"><table id="dailyRawTable"></table></div>
+</article>
+</section>
+
 </main>
 </div>
 <script src="app.js"></script>

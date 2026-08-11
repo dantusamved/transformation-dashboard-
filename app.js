@@ -3,6 +3,7 @@ const n=v=>v===null||v===""||v===undefined?null:Number(v);
 const avg=a=>{a=a.filter(Number.isFinite);return a.length?a.reduce((x,y)=>x+y,0)/a.length:null};
 const d=v=>{if(!v)return"";if(typeof v==="number"){const x=XLSX.SSF.parse_date_code(v);return`${x.y}-${String(x.m).padStart(2,"0")}-${String(x.d).padStart(2,"0")}`}return String(v).slice(0,10)};
 const el=id=>document.getElementById(id);
+const txt=v=>v===null||v===undefined||v===""?"—":v;
 
 function kill(k){if(C[k])C[k].destroy();}
 function line(k,id,labels,data,label,color){kill(k);C[k]=new Chart(el(id),{type:"line",data:{labels,datasets:[{label,data,borderColor:color,backgroundColor:color+"22",fill:true,tension:.3,spanGaps:true,pointRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:"#9aa6c5"}}},scales:{x:{ticks:{color:"#7f8baa"},grid:{color:"#1f2a46"}},y:{ticks:{color:"#7f8baa"},grid:{color:"#1f2a46"}}}}});}
@@ -15,10 +16,10 @@ async function load(){
     const buffer=await response.arrayBuffer();
     const wb=XLSX.read(buffer,{type:"array"});
     const read=name=>XLSX.utils.sheet_to_json(wb.Sheets[name],{defval:null});
-    S.daily=read("Daily_Log");
-    S.workout=read("Workout_Log");
-    S.cardio=read("Cardio_Log");
-    S.settings=Object.fromEntries(read("Settings").map(r=>[r.Setting,r.Value]));
+    S.daily=read("Daily_Log").filter(r=>n(r.Day)!==null);
+    S.workout=read("Workout_Log").filter(r=>n(r.Day)!==null&&r.Exercise);
+    S.cardio=read("Cardio_Log").filter(r=>n(r.Day)!==null&&r.Type);
+    S.settings=Object.fromEntries(read("Settings").filter(r=>r.Setting).map(r=>[r.Setting,r.Value]));
     el("status").textContent="Excel connected";
     el("status").style.color="#42e59a";
     render();
@@ -41,11 +42,51 @@ function render(){
   el("targetWeight").textContent=target;
   el("totalLost").textContent=lost.toFixed(1);
   el("workoutDays").textContent=S.daily.filter(r=>r.Workout_Day&&String(r.Rest_Day).toLowerCase()!=="yes").length;
-  el("cardioSessions").textContent=S.cardio.filter(r=>r.Type).length;
+  el("cardioSessions").textContent=S.cardio.length;
   el("progressPct").textContent=progress.toFixed(0)+"%";
   el("ring").style.setProperty("--p",progress);
   line("weight","weightChart",weights.map(x=>x.date),weights.map(x=>x.v),"Weight (lb)","#20d7ff");
-  renderWorkout(); renderCardio(); renderNutrition(); renderRecovery();
+  renderDailyView();
+  renderWorkout();
+  renderCardio();
+  renderNutrition();
+  renderRecovery();
+  renderDailyRawData();
+}
+
+function renderDailyView(){
+  const filter=el("dayFilter");
+  const days=[...new Set(S.daily.map(r=>n(r.Day)).filter(Number.isFinite))].sort((a,b)=>a-b);
+  filter.innerHTML=days.map(day=>`<option value="${day}">Day ${day}</option>`).join("");
+  if(days.length) filter.value=String(days[days.length-1]);
+
+  const draw=()=>{
+    const day=n(filter.value);
+    const daily=S.daily.find(r=>n(r.Day)===day)||{};
+    const workouts=S.workout.filter(r=>n(r.Day)===day);
+    const cardio=S.cardio.filter(r=>n(r.Day)===day);
+
+    el("dayDate").textContent=txt(d(daily.Date));
+    el("dayWeek").textContent=txt(daily.Week);
+    el("dayCalories").textContent=txt(daily.Calories);
+    el("dayProtein").textContent=txt(daily.Protein_g);
+    el("dayWeight").textContent=txt(daily.Body_Weight_lb);
+    el("dayWorkoutSummary").textContent=txt(daily.Workout_Day);
+    el("dayRest").textContent=txt(daily.Rest_Day);
+    el("dayEnergy").textContent=n(daily.Energy_1_to_10)!==null?`${daily.Energy_1_to_10}/10`:"—";
+    el("dayNotes").textContent=txt(daily.Notes);
+
+    el("dayExerciseCount").textContent=`${workouts.length} exercise${workouts.length===1?"":"s"}`;
+    el("dailyWorkoutTable").innerHTML="<thead><tr><th>Exercise</th><th>Muscle Group</th><th>Weight</th><th>Sets</th><th>Reps</th></tr></thead><tbody>"+
+      (workouts.length?workouts.map(r=>`<tr><td>${r.Exercise}</td><td>${r.Muscle_Group??""}</td><td>${r.Weight_lb??"Bodyweight"}</td><td>${r.Sets??""}</td><td>${r.Reps??""}</td></tr>`).join(""):`<tr><td class="empty" colspan="5">No detailed workout rows logged for Day ${day}.</td></tr>`)+"</tbody>";
+
+    el("dayCardioCount").textContent=`${cardio.length} entr${cardio.length===1?"y":"ies"}`;
+    el("dailyCardioTable").innerHTML="<thead><tr><th>Type</th><th>Duration</th><th>Calories</th><th>Distance</th><th>Details</th></tr></thead><tbody>"+
+      (cardio.length?cardio.map(r=>`<tr><td>${r.Type}</td><td>${r.Duration_min??""}</td><td>${r.Calories??""}</td><td>${r.Distance??""}</td><td>${r.Details??""}</td></tr>`).join(""):`<tr><td class="empty" colspan="5">No cardio entry logged for Day ${day}.</td></tr>`)+"</tbody>";
+  };
+
+  filter.onchange=draw;
+  draw();
 }
 
 function renderWorkout(){
@@ -66,7 +107,7 @@ function renderWorkout(){
 }
 
 function renderCardio(){
-  const rows=S.cardio.filter(r=>r.Type);
+  const rows=S.cardio;
   el("cardioTotal").textContent=rows.length;
   el("cardioMinutes").textContent=rows.reduce((s,r)=>s+(n(r.Duration_min)||0),0);
   el("cardioCalories").textContent=rows.reduce((s,r)=>s+(n(r.Calories)||0),0);
@@ -97,6 +138,13 @@ function renderRecovery(){
   const rows=S.daily.filter(r=>String(r.Rest_Day).toLowerCase()==="yes"||n(r.Energy_1_to_10)!==null);
   el("recoveryTable").innerHTML="<thead><tr><th>Date</th><th>Day</th><th>Week</th><th>Rest Day</th><th>Energy /10</th><th>Notes</th></tr></thead><tbody>"+
   (rows.length?rows.map(r=>`<tr><td>${d(r.Date)}</td><td>${r.Day??""}</td><td>${r.Week??""}</td><td>${r.Rest_Day}</td><td>${r.Energy_1_to_10??""}</td><td>${r.Notes??""}</td></tr>`).join(""):`<tr><td class="empty" colspan="6">No recovery data logged yet.</td></tr>`)+"</tbody>";
+}
+
+function renderDailyRawData(){
+  const rows=[...S.daily].sort((a,b)=>(n(a.Day)||0)-(n(b.Day)||0));
+  el("dailyRawCount").textContent=`${rows.length} days`;
+  el("dailyRawTable").innerHTML="<thead><tr><th>Date</th><th>Day</th><th>Week</th><th>Workout Day</th><th>Calories</th><th>Protein (g)</th><th>Body Weight (lb)</th><th>Rest Day</th><th>Energy /10</th><th>Notes</th></tr></thead><tbody>"+
+    rows.map(r=>`<tr><td>${d(r.Date)}</td><td>${r.Day??""}</td><td>${r.Week??""}</td><td>${r.Workout_Day??""}</td><td>${r.Calories??""}</td><td>${r.Protein_g??""}</td><td>${r.Body_Weight_lb??""}</td><td>${r.Rest_Day??""}</td><td>${r.Energy_1_to_10??""}</td><td>${r.Notes??""}</td></tr>`).join("")+"</tbody>";
 }
 
 document.querySelectorAll("nav button").forEach(btn=>btn.onclick=()=>{
